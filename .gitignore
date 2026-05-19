@@ -1,0 +1,7 @@
+/.vscode
+/.doddledata
+/__pycache__
+/tests
+/learn
+
+app_data.json
