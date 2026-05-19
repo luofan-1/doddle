@@ -32,39 +32,7 @@ def align_str(s, total_width):
 #         it = self.head
 
 class TodoItemBar(customtkinter.CTkFrame):
-    def __init__(self, master, index, todo, **kwargs):
-        super().__init__(master, **kwargs)
-
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
-        aff = todo["affliation"]
-        task = todo["task"]
-        ddl = todo["deadline"]
-        if ddl==TIME_REMIND:
-            ddl = "REMIND"
-        elif ddl==TIME_ALWAYS:
-            ddl = "ALWAYS"
-        info = align_str(aff, 15) + align_str(task, 20) + align_str(ddl, 19)
-        print(info)
-        self.item_info = customtkinter.CTkLabel(
-            self,
-            text=info,
-            font=("Sarasa Mono SC", 14),
-            corner_radius=0
-        )
-        self.item_info.grid(row=0, column=0, padx=(5, 0), sticky="nsw")
-        self.item_checkbox = customtkinter.CTkCheckBox(
-            self,
-            text="",
-            height=5,
-            width=5,
-            command=lambda i=index: self.master.parent.on_item_checked(i) # ???
-        )
-        if todo["done"]:
-            self.item_checkbox.select() 
-        else:
-            self.item_checkbox.deselect()
-        self.item_checkbox.grid(row=0, column=1)
+    pass
 
 
 class ListFrame(customtkinter.CTkScrollableFrame):
@@ -72,7 +40,6 @@ class ListFrame(customtkinter.CTkScrollableFrame):
         super().__init__(master, **kwargs)
         self.parent = parent
         
-        self.columnconfigure(0, weight=1)
         # print(parent)
 
         self.item_bars = []
@@ -80,30 +47,51 @@ class ListFrame(customtkinter.CTkScrollableFrame):
     # 此处是屎，如果每一次都重新创建对象不好，应该将每一个行独立为对象，只更改其属性
     def refresh_list(self):
         if self.item_bars:
-            for (i, bar_index) in enumerate(self.parent.todo_bar_map):
-                item = self.item_bars[bar_index]
-                todo = self.parent.todo_list[bar_index]
+            for item in self.item_bars:
                 item.grid_forget()
-                if todo["done"]:
-                    item.item_checkbox.select() 
-                else:
-                    item.item_checkbox.deselect()
-                item.configure(fg_color="#ECF7DF" if todo["done"] else "#FEE9EC")
-                item.grid(row=i, column=0, padx=4, pady=(4, 0), sticky="we")
-                # item.destroy()
-            return
-        for (i, bar_index) in enumerate(self.parent.todo_bar_map):
-            todo = self.parent.todo_list[bar_index]
-            item_bar = TodoItemBar(
+                item.destroy()
+            self.item_bars.clear()
+        for (i, todo) in enumerate(self.parent.todo_list):
+            item_bar = customtkinter.CTkFrame(
                 self,
-                i,
-                todo,
                 height=40,
                 fg_color="#ECF7DF" if todo["done"] else "#FEE9EC",
                 corner_radius=0
             )
+            item_bar.columnconfigure(0, weight=1)
+            item_bar.rowconfigure(0, weight=1)
+            aff = todo["affliation"]
+            task = todo["task"]
+            ddl = todo["deadline"]
+            if ddl==TIME_REMIND:
+                ddl = "REMIND"
+            elif ddl==TIME_ALWAYS:
+                ddl = "ALWAYS"
+            info = align_str(aff, 15) + align_str(task, 15) + align_str(ddl, 19)
+            # info = f"{todo["affliation"]: <15}{todo["task"]: <15}{todo["deadline"]: <19}"
+            # print(info)
+            item_info = customtkinter.CTkLabel(
+                item_bar,
+                text=info,
+                font=("Sarasa Mono SC", 14),
+                corner_radius=0
+            )
+            item_info.grid(row=0, column=0, padx=(5, 0), sticky="nsw")
+            item_checkbox = customtkinter.CTkCheckBox(
+                item_bar,
+                text="",
+                height=5,
+                width=5,
+                command=lambda index=i: self.parent.on_item_checked(index) # ???
+            )
+            if todo["done"]:
+                item_checkbox.select() 
+            else:
+                item_checkbox.deselect()
+            item_checkbox.grid(row=0, column=1)
+            self.columnconfigure(0, weight=1)
             item_bar.grid(row=i, column=0, padx=4, pady=(4, 0), sticky="we")
-            self.item_bars.append(item_bar)       
+            self.item_bars.append(item_bar)            
             
     
 class BottomBar(customtkinter.CTkFrame):
@@ -131,7 +119,7 @@ class BottomBar(customtkinter.CTkFrame):
         #     text="Order Settings"
         # )
         # self.order_menu_lable.grid(row=0, column=0)
-        options = ["ddl", "csv", "aff"]
+        options = ["ddl", "csv", "affliation"]
         self.selected_order = customtkinter.StringVar(value="ddl")
         self.order_menu = customtkinter.CTkOptionMenu(
             self,
@@ -229,7 +217,6 @@ class TodoPage(customtkinter.CTkFrame):
         # self.label = customtkinter.CTkLabel(self, text="TODO")
         # self.label.grid(row=0, column=0)
         self.todo_list = []
-        self.todo_bar_map = []
         self.load_todo_list()
 
         self.list_frame = ListFrame(
@@ -248,7 +235,6 @@ class TodoPage(customtkinter.CTkFrame):
         )
         self.bottom_bar.grid(row=1, column=0, padx=5, pady=(5,5), sticky="nswe")
 
-        # print(f"--------{self.bottom_bar.selected_order.get()=}---------")
         self.resort_list(self.bottom_bar.selected_order.get())
 
 
@@ -268,8 +254,7 @@ class TodoPage(customtkinter.CTkFrame):
         except Exception as e:
             print(e)
         # self.todo_list.sort(key=lambda x: x["order"])
-        self.todo_bar_map = [i for i in range(0, len(self.todo_list))]
-        print(self.todo_list)
+        # print(self.todo_list)
 
     def save_todo_list(self):
         try:
@@ -290,24 +275,18 @@ class TodoPage(customtkinter.CTkFrame):
     def resort_list(self, choice):
         # 此处是屎，与父对象强耦合
         match choice:
+            case 'csv':
+                self.todo_list.sort(key=lambda x: (x["done"], x["order"]))
             case 'ddl':
-                self.todo_bar_map.sort(
+                self.todo_list.sort(
                     key=lambda x: (
-                        self.todo_list[x]["done"],
+                        x["done"],
                         # datetime.strptime(x["deadline"], "%Y-%m-%d %H:%M:%S")
-                        parser.parse(self.todo_list[x]["deadline"])
+                        parser.parse(x["deadline"])
                     )
                 )
-            case 'csv':
-                self.todo_bar_map.sort(key=lambda x: (
-                    self.todo_list[x]["done"], 
-                    self.todo_list[x]["order"]
-                ))
-            case 'aff':
-                self.todo_bar_map.sort(key=lambda x: (
-                    self.todo_list[x]["done"], 
-                    self.todo_list[x]["affliation"]
-                ))
+            case 'affliation':
+                self.todo_list.sort(key=lambda x: (x["done"], x["affliation"]))
         # print(self.todo_list)
         self.list_frame.refresh_list()
 
@@ -327,11 +306,10 @@ class TodoPage(customtkinter.CTkFrame):
         new_todo["order"] = len(self.todo_list)
         new_todo["done"] = False
         self.todo_list.append(new_todo)
-        self.todo_bar_map.append(len(self.todo_list))
         self.resort_list(self.bottom_bar.selected_order.get())
 
     def on_item_checked(self, index):
-        print([todo["task"] for todo in self.todo_list])
+        # print([todo["task"] for todo in self.todo_list])
         self.todo_list[index]["done"] = not self.todo_list[index]["done"]
-        print(f"{index}, {self.todo_list[index]["task"]}")
+        # print(f"{index}, {self.todo_list[index]["task"]}")
         self.resort_list(self.bottom_bar.selected_order.get())
