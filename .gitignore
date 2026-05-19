@@ -1,7 +1,10 @@
 /.vscode
 /.doddledata
+/.doddleenv
 /__pycache__
 /tests
 /learn
+
+*.bak
 
 app_data.json
