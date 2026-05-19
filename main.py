@@ -1,4 +1,6 @@
 import customtkinter
+import signal
+import sys
 from timer import TimerPage
 from todo import TodoPage
 
@@ -12,7 +14,7 @@ class SideBar(customtkinter.CTkFrame):
 
         self.timer_page_btn = customtkinter.CTkButton(
             self,
-            text="Timer ⏰",
+            text="计时器 ⏰",
             # font=("Arial", 13),
             border_color="#4aa3f7",
             text_color="#4aa3f7",
@@ -69,6 +71,8 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         
+        signal.signal(signal.SIGINT, self.on_sigint)
+
         customtkinter.set_appearance_mode("light")
         customtkinter.set_default_color_theme("blue")
 
@@ -91,6 +95,14 @@ class App(customtkinter.CTk):
             corner_radius=0
         )
         self.sidebar.grid(row=0, column=0, padx=0, pady=0, sticky="ns")
+
+    def on_sigint(self, sig, frame):
+        # RED = "\033[91m"
+        # END = "\033[0m"
+        print(f"\n=====SIG {sig}=====\n{frame}")
+        self.on_main_window_close()
+        # raise(KeyboardInterrupt)
+        sys.exit(0)
 
     def on_main_window_close(self):
         self.mainframe.timer_page.stop_timer()

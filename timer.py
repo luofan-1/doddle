@@ -36,7 +36,8 @@ class TimerPage(customtkinter.CTkFrame):
             self, 
             width=200,
             height=20,
-            text=f"total: {self.data['total_seconds']/3600: .2f} hours",
+            # text=f"total: {self.data['total_seconds']/3600: .2f} hours",
+            text=f"总 {self.data['total_seconds']/3600: .2f} 小时",
             font=("Arial", 16)
         )
         self.total_label.grid(row=1, column=0, sticky="ns")
@@ -51,7 +52,7 @@ class TimerPage(customtkinter.CTkFrame):
 
         self.start_btn = customtkinter.CTkButton(
             self.timer_btn_frame,
-            text="start",
+            text="开始",
             width=90,
             height=30,
             command=self.start_timer
@@ -60,7 +61,7 @@ class TimerPage(customtkinter.CTkFrame):
 
         self.pause_btn = customtkinter.CTkButton(
             self.timer_btn_frame,
-            text="pause",
+            text="暂停",
             width=90,
             height=30,
             command=self.pause_timer
@@ -69,7 +70,7 @@ class TimerPage(customtkinter.CTkFrame):
 
         self.stop_btn = customtkinter.CTkButton(
             self.timer_btn_frame,
-            text="stop",
+            text="停止",
             width=90,
             height=30,
             command=self.stop_timer

@@ -3,6 +3,9 @@ import customtkinter
 from dateutil import parser
 import csv
 
+TIME_REMIND = "1970-01-01 00:00:00"
+TIME_ALWAYS = "2226-05-19 09:35:00"
+
 def visual_width(s):
     return sum(1 if c.isascii() else 2 for c in s)
 
@@ -60,6 +63,10 @@ class ListFrame(customtkinter.CTkScrollableFrame):
             aff = todo["affliation"]
             task = todo["task"]
             ddl = todo["deadline"]
+            if ddl==TIME_REMIND:
+                ddl = "REMIND"
+            elif ddl==TIME_ALWAYS:
+                ddl = "ALWAYS"
             info = align_str(aff, 15) + align_str(task, 15) + align_str(ddl, 19)
             # info = f"{todo["affliation"]: <15}{todo["task"]: <15}{todo["deadline"]: <19}"
             print(info)
@@ -99,7 +106,7 @@ class BottomBar(customtkinter.CTkFrame):
             fg_color="grey86",
             height=30,
             width=80,
-            text="+ append",
+            text="+ 添加事项",
             text_color="#4aa3f7",
             hover_color="#a4ccf1",
             corner_radius=0
@@ -129,7 +136,8 @@ class AppendTodoWindow(customtkinter.CTkToplevel):
     def __init__(self, parent):
         super().__init__()
         
-        self.title("New Todo")
+        # self.title("New Todo")
+        self.title("新增事项")
         self.geometry("300x140")
         self.resizable(False, False)
         self.grab_set()
@@ -150,6 +158,7 @@ class AppendTodoWindow(customtkinter.CTkToplevel):
         self.affliation_entry = customtkinter.CTkEntry(
             self,
             placeholder_text="affliation",
+            font=("微软雅黑", 14),
             textvariable=self.affliation_value,
             height=30,
             corner_radius=0
@@ -160,6 +169,7 @@ class AppendTodoWindow(customtkinter.CTkToplevel):
             self,
             placeholder_text="task",
             textvariable=self.task_value,
+            font=("微软雅黑", 14),
             height=30,
             corner_radius=0
         )
@@ -168,6 +178,7 @@ class AppendTodoWindow(customtkinter.CTkToplevel):
         self.ddl_entry = customtkinter.CTkEntry(
             self,
             placeholder_text="deadline",
+            font=("微软雅黑", 14),
             textvariable=self.deadline_value,
             height=30,
             corner_radius=0
@@ -177,13 +188,13 @@ class AppendTodoWindow(customtkinter.CTkToplevel):
         self.button_frame.columnconfigure(0, weight=1)
         self.confirm_btn = customtkinter.CTkButton(
             self.button_frame,
-            text="Confirm",
+            text="确认",
             command=self.on_confirm
         )
         self.confirm_btn.grid(row=0, column=0, padx=(0, 10), sticky="wens")
         self.cancel_btn = customtkinter.CTkButton(
             self.button_frame,
-            text="Cancel",
+            text="取消",
             command=self.destroy
         )
         self.cancel_btn.grid(row=0, column=1, padx=(10, 0), sticky="wens")
@@ -287,6 +298,11 @@ class TodoPage(customtkinter.CTkFrame):
             return
         # print([val.get() for (_, val) in win.result.items()])
         new_todo = {key: val.get() for key,val in win.result.items()}
+        match new_todo["deadline"]:
+            case "" | "r" | "remind":
+                new_todo["deadline"] = TIME_REMIND
+            case "a" | "always":
+                new_todo["deadline"] = TIME_ALWAYS
         new_todo["order"] = len(self.todo_list)
         new_todo["done"] = False
         self.todo_list.append(new_todo)
