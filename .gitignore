@@ -4,7 +4,10 @@
 /__pycache__
 /tests
 /learn
+/app
+__pycache__
 
 *.bak
+*.exe
 
 app_data.json

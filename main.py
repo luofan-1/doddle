@@ -1,113 +1,61 @@
-import customtkinter
-import signal
-import sys
-from timer import TimerPage
-from todo import TodoPage
+#! /d/projects/doddle/.doddleenv/Scripts/python
+
+# 要实现的功能：
+# 1. 异常警告系统
+# 2. 导入系统
+
+import curses
+from curses import wrapper
+from curses.textpad import Textbox
+
+from stddoddle.utils.display import display_center
+from stddoddle.utils.style_manager import StyleManager
+from doddleconfig.config import *
+
+import time
+
+class App:
+    def __init__(self, stdscr):
+        self.STYLE = StyleManager()
+
+        stdscr.clear()
+
+        self.page_viewer = curses.newwin(curses.LINES-1, curses.COLS, 0, 0)
+        display_center(self.page_viewer, greeting_view)
+        self.page_viewer.refresh()
+
+        self.warning_pad = curses.newpad(10, curses.COLS)
+
+        self.cmd_bar = curses.newwin(1, curses.COLS, curses.LINES-1, 0)
+        self.cmd_bar.addstr(*cmd_bar_prompt)
+        self.cmd_bar.refresh()
+        self.cmd_bar_input_win = self.cmd_bar.derwin(0, len(cmd_bar_prompt[0]))
+        self.cmd_bar_input_win.nodelay(True)
+        self.cmd_input = Textbox(self.cmd_bar_input_win)
+
+def main(stdscr):
+    doddle = App(stdscr)
+
+    while True:
+        doddle.cmd_input.edit()
+        ch = doddle.cmd_bar_input_win.getch()
+        if ch!=-1:
+            doddle.cmd_bar_input_win.clear()
+            curses.ungetch(ch)
+
+        input_text = doddle.cmd_input.gather().strip()
+        # print(f"{input_text=}")
+        doddle.cmd_bar_input_win.clear()
+        if input_text in cmd_lib:
+            cmd_lib[input_text]()
+        else:
+            doddle.warning_pad.addstr(f"command not found: {input_text}", doddle.STYLE.FRED_BBLACK)
+            doddle.warning_pad.refresh(0, 0, curses.LINES-2, 0, curses.LINES-2, curses.COLS-1)
+            time.sleep(1.5)
+            doddle.warning_pad.clear()
+            doddle.warning_pad.refresh(0, 0, curses.LINES-2, 0, curses.LINES-2, curses.COLS-1)
+            doddle.page_viewer.refresh()
 
 
-class SideBar(customtkinter.CTkFrame):
-    def __init__(self, master, mainframe, **kwargs):
-        super().__init__(master, **kwargs)
-        self.mainframe = mainframe
-
-        self.columnconfigure(0, weight=1)
-
-        self.timer_page_btn = customtkinter.CTkButton(
-            self,
-            text="计时器 ⏰",
-            # font=("Arial", 13),
-            border_color="#4aa3f7",
-            text_color="#4aa3f7",
-            fg_color="#f0faf2",
-            #hover_color="blue",
-            corner_radius=0,
-            command=self.mainframe.show_timer_page
-        )
-        self.timer_page_btn.grid(row=0, column=0, sticky="we")
-
-        self.todo_page_btn = customtkinter.CTkButton(
-            self,
-            text="TODO 📋",
-            # font=("Arial", 13),
-            border_color="#4aa3f7",
-            text_color="#4aa3f7",
-            fg_color="#f0faf2",
-            #hover_color="#62bcf5",
-            corner_radius=0,
-            command=self.mainframe.show_todo_page
-        )
-        self.todo_page_btn.grid(row=1, column=0, sticky="we")
-
-class MainFrame(customtkinter.CTkFrame):
-    # pages = []
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
-
-        self.timer_page = TimerPage(self, fg_color="#faf4e3", corner_radius=0)
-        self.todo_page = TodoPage(self, fg_color="#faf4e3", corner_radius=0)
-
-        self.show_timer_page()
-    
-    def show_timer_page(self):
-        if self.todo_page.displayed:
-            self.todo_page.grid_forget()
-            self.todo_page.displayed = 0
-        self.timer_page.displayed = 1
-        self.timer_page.grid(row=0, column=0, sticky="nswe")
-    
-    def show_todo_page(self):
-        if self.timer_page.displayed:
-            self.timer_page.grid_forget()
-            self.todo_page.displayed = 0
-        self.todo_page.displayed = 1
-        self.todo_page.grid(row=0, column=0, sticky="nswe")
-
-    
-
-class App(customtkinter.CTk):
-    def __init__(self):
-        super().__init__()
-        
-        signal.signal(signal.SIGINT, self.on_sigint)
-
-        customtkinter.set_appearance_mode("light")
-        customtkinter.set_default_color_theme("blue")
-
-        self.title("Doddle ✏️")
-        self.minsize(600, 370)
-        self.geometry("600x370")
-        self.protocol("WM_DELETE_WINDOW", self.on_main_window_close)
-
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
-
-        self.mainframe = MainFrame(self, fg_color="#faf4e3", corner_radius=0)
-        self.mainframe.grid(row=0, column=1, sticky="nswe")
-
-        self.sidebar = SideBar(
-            self,
-            self.mainframe,
-            width=80,
-            fg_color="#f0faf2",
-            corner_radius=0
-        )
-        self.sidebar.grid(row=0, column=0, padx=0, pady=0, sticky="ns")
-
-    def on_sigint(self, sig, frame):
-        # RED = "\033[91m"
-        # END = "\033[0m"
-        print(f"\n=====SIG {sig}=====\n{frame}")
-        self.on_main_window_close()
-        # raise(KeyboardInterrupt)
-        sys.exit(0)
-
-    def on_main_window_close(self):
-        self.mainframe.timer_page.stop_timer()
-        self.mainframe.todo_page.save_todo_list()
-        self.destroy()
-    
-doddle = App()
-doddle.mainloop()
+if __name__ == '__main__':
+    wrapper(main)
