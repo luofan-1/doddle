@@ -3,7 +3,7 @@ import curses
 import time
 # from collections import deque
 from doddleconfig.config import warning_duration
-from stddoddle.utils.style_manager import StyleManager
+from stddoddle.utils import style_manager
 
 PAD_CAPACITY = 10
 
@@ -20,16 +20,16 @@ class Warner:
     def _pad_refresh(self):
         self._displayer.clear()
         if len(self._displayed_msg)==0:
-            self._displayer.refresh(0, 0, curses.LINES-11, 0, curses.LINES-2, curses.COLS-1)
+            self._displayer.noutrefresh(0, 0, curses.LINES-11, 0, curses.LINES-2, curses.COLS-1)
             return
 
         cnt = 0
         for msgt in self._displayed_msg:
-            self._displayer.addstr(cnt, 0, f'{cnt+1} {msgt[0]}', StyleManager.FRED_BBLACK)
+            self._displayer.addstr(cnt, 0, f'error: {msgt[0]}', style_manager.FRED_BBLACK)
             cnt += 1
         
         # self.nlines_on_display = cnt
-        self._displayer.refresh(0, 0, curses.LINES-1-cnt, 0, curses.LINES-2, curses.COLS-1)
+        self._displayer.noutrefresh(0, 0, curses.LINES-1-cnt, 0, curses.LINES-2, curses.COLS-1)
 
     def add_msg(self, msg):
         self._msg_queue.append(msg)
