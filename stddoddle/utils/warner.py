@@ -5,7 +5,7 @@ import time
 from doddleconfig.config import warning_duration
 from stddoddle.utils import style_manager
 
-PAD_CAPACITY = 10
+PAD_CAPACITY = 15
 
 class Warner:
     def __init__(self):
@@ -31,11 +31,10 @@ class Warner:
 
         cnt = 0
         for msgt in self._displayed_msg:
-            self._displayer.addstr(cnt, 0, f'error: {msgt[0]}', style_manager.FRED_BBLACK)
+            msg = f'error: {msgt[0]}'
+            self._displayer.addstr(cnt, 0, msg, style_manager.FRED_BBLACK)
             cnt += 1
-        
-        # self.nlines_on_display = cnt
-        self._displayer.noutrefresh(0, 0, curses.LINES-1-cnt, 0, curses.LINES-2, curses.COLS-1)
+            self._displayer.noutrefresh(0, 0, curses.LINES-1-cnt, 0, curses.LINES-2, len(msg)-1)
 
     def add_msg(self, msg):
         self._msg_queue.append(msg)

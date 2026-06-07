@@ -24,7 +24,14 @@ warning_duration = 1.5
 cmd_bar_prompt = "> ", curses.A_BOLD
 
 # cmd_lib
+def _launch_timer(doddle):
+    """惰性导入 timer 模块，创建页面对象，加载到 page_viewer。"""
+    from stddoddle.timer import Timer
+    doddle.timer_page = Timer(doddle.page_viewer)
+    doddle.timer_page.render()
+
+
 cmd_lib = {
-    "exit": lambda: exit(0),
-    "timer": lambda: 1+1,
+    "exit": lambda _: exit(0),
+    "timer": _launch_timer,
 }
