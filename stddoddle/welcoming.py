@@ -1,5 +1,5 @@
-from stddoddle.utils.page import Page
-from stddoddle.utils.display import display_center
+from stddoddle.page import Page
+from stddoddle.utils.display_utils import display_center
 from doddleconfig.config import greeting_view
 
 

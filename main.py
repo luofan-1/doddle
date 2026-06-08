@@ -4,7 +4,7 @@ import curses
 from curses import wrapper
 from curses.textpad import Textbox
 
-from stddoddle.utils.display import display_center
+from stddoddle.utils.display_utils import display_center
 from stddoddle.utils import style_manager
 from stddoddle.utils.warner import Warner
 from stddoddle.utils.nonblocking_textbox import NonblockingTextbox

@@ -1,5 +1,5 @@
 from doddleconfig.timer_config import *
-from stddoddle.utils.page import Page
+from stddoddle.page import Page
 
 # figure_style = [
 #     "  ___   \n / _ \\  \n| | | | \n| | | | \n| |_| | \n \\___/  \n        ",
