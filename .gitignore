@@ -5,6 +5,7 @@
 /tests
 /learn
 /app
+/wand
 __pycache__
 
 *.bak

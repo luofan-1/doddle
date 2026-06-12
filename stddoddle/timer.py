@@ -22,8 +22,11 @@ from stddoddle.page import Page
 # DIVIDER = divider_style.split("\n")
 
 class Timer(Page):
-    def __init__(self, doddle) -> None:
-        super().__init__(doddle)
+    _type = "TimerPage"
+    _commands: list[str] = ["reset", "start", "stop"]
+
+    def __init__(self, page_viewer, prev, next, label) -> None:
+        super().__init__(page_viewer, prev, next, label)
         self.time_counted = 0
         self.time_text = ""
         # self.summary_text = ""
